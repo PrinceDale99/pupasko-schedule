@@ -1,0 +1,236 @@
+// Schedules from the "Directors / Actors / Scriptwriters" Google Doc.
+// Every entry is a time the person is BUSY:
+//   [day, "start", "end", "what"]            → hard block (class, duty)
+//   [day, "start", "end", "what", "soft"]    → heads-up only, still counts as available
+// Days are Mon Tue Wed Thu Fri Sat Sun. Times are 24-hour.
+
+const BSPSYCH_1 = [
+  ["Tue", "10:30", "13:30", "Psych Stats"],
+  ["Tue", "14:00", "17:00", "Purposive Comm"],
+  ["Wed", "07:30", "10:30", "CWTS"],
+  ["Wed", "10:30", "13:30", "MMW"],
+  ["Wed", "14:00", "17:00", "Intro to Psychology"],
+  ["Thu", "07:30", "09:30", "PATHFIT 1"],
+  ["Thu", "10:30", "13:30", "Psych Stats"],
+  ["Thu", "14:00", "17:00", "Psych Stats"],
+  ["Thu", "17:00", "20:00", "UTS"],
+];
+
+const BSBA_HRM_1_1 = [
+  ["Mon", "07:30", "10:30", "GEED 002"],
+  ["Mon", "12:00", "13:00", "CWTS"],
+  ["Mon", "17:00", "20:00", "HRM 101"],
+  ["Tue", "10:30", "13:30", "BUMA 013"],
+  ["Fri", "07:30", "10:30", "UTS"],
+  ["Fri", "10:30", "13:30", "TCW"],
+  ["Fri", "14:00", "16:00", "PATHFIT"],
+  ["Sat", "09:00", "12:00", "CWTS"],
+  ["Sat", "17:00", "20:00", "HRM 001"],
+];
+
+const BSIT_SHARED = [
+  ["Mon", "17:00", "21:00", "ITEC 102 Lecture"],
+  ["Tue", "08:00", "11:00", "CWTS"],
+  ["Tue", "17:00", "19:00", "ITEC 102 Lab"],
+  ["Wed", "07:30", "09:30", "ITEC 101 (tentative)"],
+  ["Wed", "14:00", "17:00", "GEED 005"],
+  ["Thu", "07:30", "12:30", "COMP 002"],
+  ["Thu", "14:00", "16:00", "PATHFIT"],
+  ["Fri", "10:00", "13:00", "COMP 001"],
+  ["Fri", "14:00", "17:00", "GEED 004"],
+  ["Fri", "18:00", "21:00", "ITEC 101"],
+];
+
+export const GROUPS = ["Directors", "Actors", "Writers"];
+
+export const PEOPLE = [
+  // Directors and production
+  {
+    name: "Prince Dale Limosnero", role: "Theatre Director", group: "Directors", section: "BSIT 2-1",
+    busy: [
+      ["Mon", "08:00", "13:00", "Data Comm & Networking"],
+      ["Mon", "14:00", "17:00", "BSIT Free Elective 1"],
+      ["Tue", "07:30", "12:30", "Discrete Structures"],
+      ["Tue", "14:00", "19:00", "Programming 3"],
+      ["Thu", "10:30", "13:30", "Understanding the Self"],
+      ["Thu", "17:00", "20:00", "Reading Visual Arts"],
+      ["Sat", "09:30", "11:30", "PATHFIT"],
+      ["Sat", "13:00", "18:00", "Operating Systems"],
+    ],
+  },
+  {
+    name: "Hannah Hisita", role: "Assistant Director", group: "Directors", section: "BSPSYCH 1st sem",
+    busy: [
+      ["Tue", "10:30", "13:30", "Psych Stats"],
+      ["Tue", "14:00", "17:00", "Purposive Comm"],
+      ["Wed", "07:30", "10:30", "CWTS"],
+      ["Wed", "10:30", "13:30", "MMW"],
+      ["Wed", "14:00", "17:00", "ITP"],
+      ["Thu", "07:30", "09:30", "PATHFIT 1"],
+      ["Thu", "10:30", "13:30", "Psych Stats"],
+      ["Thu", "14:00", "17:00", "Psych Stats"],
+      ["Thu", "17:00", "20:00", "UTS"],
+    ],
+  },
+  {
+    name: "Nica", role: "Creative Director", group: "Directors",
+    busy: [
+      ["Mon", "07:30", "08:30", "CWTS"],
+      ["Tue", "08:00", "10:00", "CWTS"],
+      ["Tue", "10:30", "13:30", "Filipinohiya"],
+      ["Wed", "07:30", "10:30", "PIC"],
+      ["Wed", "10:30", "13:30", "UTS"],
+      ["Wed", "14:00", "17:00", "TCW"],
+      ["Thu", "09:30", "11:30", "PATHFIT"],
+      ["Fri", "14:00", "17:00", "ITL"],
+      ["Fri", "17:00", "19:00", "LCS"],
+      ["Sat", "14:00", "17:00", "RIPH"],
+    ],
+  },
+  {
+    name: "Carl Pangilinan", role: "Stage Manager", group: "Directors",
+    busy: [
+      ["Mon", "07:30", "08:30", "CWTS (online)"],
+      ["Tue", "10:30", "13:30", "AOPRM"],
+      ["Tue", "17:00", "20:00", "MMW"],
+      ["Wed", "10:30", "13:30", "Keyboarding Lab"],
+      ["Wed", "13:30", "20:00", "Freshie Events / PASOA"],
+      ["Thu", "08:00", "10:00", "PATHFIT"],
+      ["Thu", "10:30", "13:30", "FOS Lab"],
+      ["Thu", "14:00", "17:00", "UTS"],
+      ["Fri", "08:00", "10:00", "CWTS Duty"],
+      ["Fri", "10:30", "13:30", "FOS Lecture"],
+      ["Fri", "14:00", "17:00", "Keyboarding Lab"],
+    ],
+    note: "Wednesday PASOA events say \"1:30 PM onwards\". Counted as busy until 8 PM.",
+  },
+  {
+    name: "Xav", role: "Production Manager", group: "Directors", section: "BSECE 1-1",
+    busy: [
+      ["Tue", "07:30", "10:30", "CWTS 001"],
+      ["Tue", "10:30", "13:30", "Basic Electronics"],
+      ["Tue", "14:00", "17:00", "Understanding the Self"],
+      ["Tue", "17:00", "20:00", "Basic Calculus"],
+      ["Wed", "09:30", "11:30", "PATHFIT 1"],
+      ["Wed", "14:00", "17:00", "Engineering Data Analysis"],
+      ["Wed", "17:00", "20:00", "MMW"],
+      ["Thu", "14:00", "17:00", "General Physics"],
+      ["Fri", "10:00", "12:00", "Computer Programming Lecture"],
+      ["Fri", "14:00", "17:00", "Basic Electronics 1"],
+      ["Fri", "17:00", "20:00", "Computer Programming Lab"],
+      ["Fri", "20:00", "23:00", "Goes home to Quezon", "soft"],
+      ["Sat", "07:00", "23:00", "In Quezon. Okay if told in advance", "soft"],
+      ["Sun", "07:00", "23:00", "Likely still in Quezon", "soft"],
+    ],
+    note: "Goes home to Quezon every Friday night. Saturday is okay if you tell him in advance.",
+  },
+
+  // Actors
+  {
+    name: "Christen Tiedra", role: "Actor", group: "Actors",
+    busy: [
+      ["Tue", "10:30", "13:30", "Psych Stats"],
+      ["Tue", "14:00", "17:00", "Purposive Comm"],
+      ["Wed", "08:00", "10:00", "CWTS Duty"],
+      ["Wed", "10:30", "13:30", "Mathematics"],
+      ["Wed", "14:00", "17:00", "Intro to Psychology"],
+      ["Thu", "07:30", "09:30", "PATHFIT"],
+      ["Thu", "10:30", "13:30", "Psych Stats"],
+      ["Thu", "14:00", "17:00", "Psych Stats"],
+      ["Thu", "17:00", "20:00", "Understanding the Self"],
+    ],
+  },
+  {
+    name: "Den Dignos", role: "Actor", group: "Actors", section: "ECE 3-1",
+    busy: [
+      ["Mon", "10:30", "13:30", "Comms 3 Lab (online)"],
+      ["Mon", "14:30", "17:30", "Feedback & Control Lab (online)"],
+      ["Mon", "18:00", "21:00", "Methods of Research (online)"],
+      ["Tue", "14:00", "17:00", "Life & Works of Rizal"],
+      ["Wed", "11:00", "14:00", "Comms 3"],
+      ["Wed", "14:00", "17:00", "Feedback & Control Lecture"],
+      ["Thu", "08:00", "14:00", "Signals, Spectra & Processing"],
+      ["Thu", "14:00", "20:00", "Electromagnetics"],
+      ["Sat", "10:30", "13:30", "Comms 4"],
+      ["Sat", "14:00", "17:00", "Comms 4"],
+    ],
+  },
+  { name: "James Camaganakan", role: "Actor", group: "Actors", busy: BSIT_SHARED },
+  { name: "Trisha Nicole", role: "Actor", group: "Actors", busy: BSIT_SHARED },
+  {
+    name: "Erica Ybanez", role: "Actor", group: "Actors", section: "BS Psychology 3-1",
+    busy: [
+      ["Thu", "07:30", "10:30", "Sikolohiyang Pilipino"],
+      ["Thu", "10:30", "13:30", "Abnormal Psychology"],
+      ["Thu", "14:00", "17:00", "Social Psychology"],
+      ["Fri", "07:30", "12:30", "Field Methods in Psychology"],
+      ["Fri", "14:00", "17:00", "Strategic HR Development"],
+      ["Fri", "17:00", "20:00", "Microbiology/Parasitology"],
+      ["Sat", "10:30", "15:00", "Microbiology/Parasitology"],
+    ],
+  },
+  {
+    name: "Ian Ignacio", role: "Actor", group: "Actors", section: "BSPSY 1-1",
+    busy: [
+      ["Tue", "10:30", "13:30", "Psych Stats"],
+      ["Tue", "14:00", "17:00", "Purposive Comm"],
+      ["Wed", "07:30", "10:30", "CWTS"],
+      ["Wed", "10:30", "13:30", "MMW"],
+      ["Wed", "14:00", "17:00", "ITP"],
+      ["Thu", "07:30", "10:00", "PATHFIT"],
+      ["Thu", "10:30", "17:00", "Psych Stats (2 classes)"],
+      ["Thu", "17:00", "20:00", "UTS"],
+      ["Fri", "07:00", "18:00", "Has a Friday curfew (time not given)", "soft"],
+      ["Fri", "18:00", "23:00", "Sabbath"],
+      ["Sat", "07:00", "18:00", "Sabbath"],
+    ],
+    note: "Seventh-day Adventist: no activities from Friday 6 PM to Saturday 6 PM. Has a curfew on Fridays.",
+  },
+  { name: "Icelle Latorre", role: "Actor", group: "Actors", section: "BSBA-HRM 1-1", busy: BSBA_HRM_1_1 },
+  {
+    name: "Hana Valle", role: "Actor", group: "Actors", section: "BSIT 1-1",
+    busy: [
+      ["Tue", "14:00", "17:00", "Filipinolohiya"],
+      ["Tue", "17:00", "20:00", "Principles of Accounting"],
+      ["Wed", "10:30", "13:30", "Purposive Comm"],
+      ["Wed", "13:30", "18:30", "Computer Programming 1"],
+      ["Fri", "10:30", "13:30", "MMW"],
+      ["Fri", "14:00", "17:00", "Intro to Computing"],
+      ["Fri", "17:00", "19:00", "Intro to Computing"],
+      ["Sat", "10:00", "12:00", "CWTS"],
+      ["Sat", "14:00", "16:00", "PATHFIT"],
+    ],
+  },
+  { name: "Lorenzo Miguel", role: "Actor", group: "Actors", section: "BSPSYCH 1st sem", busy: BSPSYCH_1, note: "Same schedule image as Hannah." },
+  { name: "Lexine Lorraine", role: "Actor", group: "Actors", section: "BSPSYCH 1st sem", busy: BSPSYCH_1, note: "Same schedule image as Hannah." },
+  { name: "Lea Panesa", role: "Actor", group: "Actors", section: "BSBA-HRM 1-1", busy: BSBA_HRM_1_1, note: "Same schedule image as Icelle." },
+
+  // Scriptwriters
+  {
+    name: "Ryvn Daizzer", role: "Scriptwriter", group: "Writers",
+    busy: [
+      ["Mon", "14:00", "17:00", "Gender and Society"],
+      ["Mon", "17:00", "20:00", "Filipinolohiya"],
+      ["Tue", "10:30", "13:30", "Mathematics in the Modern World"],
+      ["Tue", "14:00", "16:00", "CWTS"],
+      ["Tue", "17:00", "20:00", "Readings in PH History"],
+      ["Fri", "07:30", "09:30", "PATHFIT 1"],
+      ["Fri", "10:30", "13:30", "Calculus 1"],
+      ["Sat", "07:30", "10:30", "Engineering Drawing"],
+      ["Sat", "10:30", "13:30", "Chemistry for Engineers"],
+      ["Sat", "14:00", "17:00", "Chemistry for Engineers"],
+      ["Sat", "17:00", "18:00", "Mechanical Engineering Orientation"],
+    ],
+  },
+  { name: "Kenzo Delos Santos", role: "Scriptwriter", group: "Writers", busy: BSIT_SHARED },
+  { name: "Erika Nacionales", role: "Scriptwriter", group: "Writers", busy: BSIT_SHARED },
+  {
+    name: "Micaela Santiago", role: "Scriptwriter", group: "Writers", section: "BSBA-MM 4-1",
+    busy: [
+      ["Tue", "14:00", "17:00", "New Market Development"],
+      ["Tue", "17:00", "20:00", "Social Responsibility & Good Governance"],
+      ["Wed", "14:00", "17:00", "Feasibility Study"],
+      ["Wed", "17:00", "20:00", "Strategic Marketing Management"],
+    ],
+  },
+];
