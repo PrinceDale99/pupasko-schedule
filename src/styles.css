@@ -569,3 +569,176 @@ button.row:active { background: var(--fill-2); }
 [data-lite] .lg-glass { --lg-blur: 12px; }
 /* Rows that scroll off-screen skip layout and paint until they come back. */
 [data-lite] .section { content-visibility: auto; contain-intrinsic-size: auto 400px; }
+
+/* ---------- Brand ---------- */
+.brand {
+  margin: 0 4px 10px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--label);
+}
+.brand span { font-weight: 500; letter-spacing: 0.06em; color: var(--label-2); }
+
+/* ---------- Audition recommendation (top of Now) ---------- */
+.pick {
+  margin-bottom: 18px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--indigo) 22%, transparent), color-mix(in srgb, var(--pink) 14%, transparent)),
+    var(--material);
+  box-shadow: inset 0 0 0 0.5px color-mix(in srgb, var(--indigo) 35%, transparent), var(--material-shadow);
+}
+.pick button {
+  width: 100%;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.pick button:active { background: var(--fill-2); }
+.pick-main { padding: 16px; }
+.pick-icon {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: linear-gradient(180deg, #8e8cf0, var(--indigo));
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--indigo) 40%, transparent);
+}
+.pick-icon svg { width: 24px; height: 24px; }
+.pick-body { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.pick-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--indigo);
+}
+.pick-title { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
+.pick-sub { font-size: 14px; color: var(--label-2); }
+.pick-note { font-size: 13px; font-weight: 500; color: var(--orange); }
+.pick-alt {
+  padding: 12px 16px 12px 72px;
+  font-size: 14px;
+  color: var(--label-2);
+  border-top: 0.5px solid var(--sep) !important;
+}
+.pick-alt-text { flex: 1; min-width: 0; }
+.pick-alt b { color: var(--label); font-weight: 600; }
+@media (max-width: 380px) {
+  .pick-main { padding: 14px; gap: 10px; }
+  .pick-icon { width: 38px; height: 38px; border-radius: 12px; }
+  .pick-title { font-size: 18px; }
+  .pick-alt { padding-left: 14px; }
+}
+@media (min-width: 900px) {
+  .pick { display: flex; align-items: stretch; margin-bottom: 24px; }
+  .pick-main { flex: 1.4; }
+  .pick-alt { flex: 1; padding-left: 20px; border-top: 0 !important; border-left: 0.5px solid var(--sep) !important; }
+  .page[data-tab="now"] .main { padding-top: 92px; }
+}
+
+/* ---------- Auditions ---------- */
+.rules { gap: 10px; }
+.rule { display: flex; align-items: center; gap: 12px; }
+.rule-n {
+  flex: none;
+  min-width: 40px;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--indigo);
+  background: color-mix(in srgb, var(--indigo) 14%, transparent);
+  white-space: nowrap;
+}
+.rule-n[data-wide] { font-size: 13px; }
+.rule-t { font-size: 14px; color: var(--label-2); }
+
+.day-row[aria-pressed="true"] { background: color-mix(in srgb, var(--indigo) 10%, transparent); }
+.rank {
+  flex: none;
+  width: 44px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--label-2);
+  background: var(--fill-2);
+}
+.rank[data-best] { color: #fff; background: linear-gradient(180deg, #8e8cf0, var(--indigo)); }
+.check { width: 20px; height: 20px; color: var(--indigo); flex: none; }
+
+.session {
+  position: relative;
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 12px;
+  padding: 14px 16px;
+}
+.session + .session::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 16px;
+  right: 0;
+  border-top: 0.5px solid var(--sep);
+}
+.session-time { display: grid; align-content: start; }
+.session-start { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.session-end { font-size: 12px; color: var(--label-2); white-space: nowrap; }
+.session-body { display: grid; gap: 8px; min-width: 0; }
+.session-line { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 8px; font-size: 13px; }
+.session-k {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--label-3);
+  padding-top: 1px;
+}
+.session-v { color: var(--label); }
+.session-v.muted { color: var(--label-2); }
+.session-k.warn, .session-v.warn { color: var(--orange); }
+.session-empty { font-size: 13px; color: var(--label-3); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 3px 10px 3px 3px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--fill-2);
+}
+.chip .avatar { width: 22px; height: 22px; font-size: 9px; }
+.chip-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chip[data-soft] { box-shadow: inset 0 0 0 1px var(--orange); }
+@media (max-width: 380px) {
+  .session { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .session-time { display: flex; gap: 6px; align-items: baseline; }
+  .session-line { grid-template-columns: 68px minmax(0, 1fr); }
+}
+
+/* Four tabs */
+.tabbar .lg-tab-bar { --lg-tab-width: 80px; }
+@media (max-width: 360px) { .tabbar .lg-tab-bar { --lg-tab-width: 70px; } }
+@media (min-width: 900px) { .page[data-tab="auditions"] .main { padding-top: 92px; } }
+.live-slot:empty { display: none; }

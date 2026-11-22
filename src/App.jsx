@@ -4,8 +4,11 @@ import { PEOPLE, GROUPS } from "./data.js";
 import {
   DAYS, DAY_NAME, DAY_START, DAY_END, fmt, fmtDuration, statusAt,
   commonWindows, freeCount, initials, nowInfo, toMin,
+  planAuditions, otherDaysFor, MIN_DIRECTORS, PER_HOUR, AUDITION_START, AUDITION_END,
 } from "./logic.js";
-import { IconClock, IconCalendar, IconPeople, IconChevron, IconInfo } from "./icons.jsx";
+import {
+  IconClock, IconCalendar, IconPeople, IconChevron, IconInfo, IconClapper, IconSparkle, IconCheck,
+} from "./icons.jsx";
 
 /*
  * Performance notes
@@ -99,6 +102,11 @@ const GROUP_LABEL = { Directors: "Directors", Actors: "Actors", Writers: "Writer
 const DAY_ITEMS = DAYS.map((d) => ({ value: d, label: d }));
 const FILTER_ITEMS = [{ value: "All", label: "Everyone" }, ...GROUPS.map((g) => ({ value: g, label: GROUP_LABEL[g] }))];
 const MEMBERS = Object.fromEntries(GROUPS.map((g) => [g, PEOPLE.filter((p) => p.group === g)]));
+// Schedules are fixed, so the audition plan is worked out once.
+const AUDITIONS = planAuditions(MEMBERS.Directors, MEMBERS.Actors);
+const firstName = (p) => p.name.split(" ")[0];
+const names = (list) => list.map(firstName).join(", ");
+const span = (w) => `${fmt(w.start)} – ${fmt(w.end)}`;
 
 const Avatar = memo(function Avatar({ person }) {
   return (
@@ -226,7 +234,7 @@ function Stat({ n, label, tone }) {
   );
 }
 
-function NowView({ selection, setSelection }) {
+function NowView({ selection, setSelection, openAudition }) {
   const now = useNow();
   const live = nowInfo(now);
   const { day, min, isLive } = selection.isLive ? { day: live.day, min: live.min, isLive: true } : selection;
@@ -244,6 +252,8 @@ function NowView({ selection, setSelection }) {
   const onMin = useCallback((m) => setSelection({ isLive: false, day: dayRef.current, min: m }), [setSelection]);
 
   return (
+    <>
+    <AuditionPick onOpen={openAudition} />
     <div className="split">
       <aside className="side">
         <header className="large-header">
@@ -282,6 +292,7 @@ function NowView({ selection, setSelection }) {
         <NowLists day={deferred.day} min={deferred.min} filter={deferred.filter} stale={stale} />
       </div>
     </div>
+    </>
   );
 }
 
@@ -297,7 +308,7 @@ const Windows = memo(function Windows({ selected, minLen, goTo }) {
     >
       {!selected.length && <p className="list-empty">Turn on the people you need.</p>}
       {selected.length > 0 && !windows.length && (
-        <p className="list-empty">No {fmtDuration(minLen)} window works for everyone. Try a shorter shoot or fewer people.</p>
+        <p className="list-empty">No {fmtDuration(minLen)} window works for everyone. Try a shorter practice or fewer people.</p>
       )}
       {windows.map((w) => (
         <button key={w.day + w.start} type="button" className="row window" onClick={() => goTo(w.day, w.start)}>
@@ -414,16 +425,16 @@ function PlanView({ needed, setNeeded, goTo }) {
     <div className="split">
       <aside className="side">
         <header className="large-header">
-          <p className="eyebrow">Plan a shoot</p>
+          <p className="eyebrow">Plan a practice</p>
           <h1>Find a time</h1>
         </header>
 
         <GlassPanel>
           <div className="panel-row">
-            <span className="panel-label">Shoot length</span>
+            <span className="panel-label">Practice length</span>
             <span className="panel-value">At least {fmtDuration(minLen)}</span>
           </div>
-          <Slider aria-label="Minimum shoot length" min={60} max={360} step={30} value={minLen} onValueChange={setMinLen} />
+          <Slider aria-label="Minimum practice length" min={60} max={360} step={30} value={minLen} onValueChange={setMinLen} />
         </GlassPanel>
 
         <div className="people-picker">
@@ -456,6 +467,189 @@ function PlanView({ needed, setNeeded, goTo }) {
         <WeekGrid selected={selected} goTo={goTo} />
       </div>
     </div>
+  );
+}
+
+/* ---------- Auditions ---------- */
+
+const ACTOR_TOTAL = MEMBERS.Actors.length;
+
+function dayFacts(d) {
+  const flagged = [...new Map(d.sessions.flatMap((s) => s.flagged).map((p) => [p.name, p])).values()];
+  return { flagged };
+}
+
+const softReason = (p, day) => p.busy.find((b) => b[0] === day && b[4] === "soft")?.[3] ?? "check with them";
+
+/** The recommendation shown on top of the Now tab. */
+const AuditionPick = memo(function AuditionPick({ onOpen }) {
+  const best = AUDITIONS.best;
+  if (!best) return null;
+  const { flagged } = dayFacts(best);
+  const runnerUp = AUDITIONS.ranked.find((d) => d !== best && d.window && d.scheduled === best.scheduled);
+  return (
+    <section className="pick" aria-label="Audition recommendation">
+      <button type="button" className="pick-main" onClick={() => onOpen(best.day)}>
+        <span className="pick-icon"><IconSparkle /></span>
+        <span className="pick-body">
+          <span className="pick-label">Best time for auditions</span>
+          <span className="pick-title">
+            {DAY_NAME[best.day]}, <span className="nowrap">{span(best.window)}</span>
+          </span>
+          <span className="pick-sub">
+            {best.scheduled === ACTOR_TOTAL ? `All ${ACTOR_TOTAL} actors` : `${best.scheduled} of ${ACTOR_TOTAL} actors`}
+            {" · "}{best.minDirectors}+ directors every hour
+          </span>
+          {flagged.length > 0 && <span className="pick-note">Heads-up: {names(flagged)}</span>}
+        </span>
+        <IconChevron className="chev" />
+      </button>
+      {runnerUp && (
+        <button type="button" className="pick-alt" onClick={() => onOpen(runnerUp.day)}>
+          <span className="pick-alt-text">
+            Also works: <b>{DAY_NAME[runnerUp.day]}, {span(runnerUp.window)}</b>
+            {dayFacts(runnerUp).flagged.length === 0 && " · no heads-ups"}
+          </span>
+          <IconChevron className="chev" />
+        </button>
+      )}
+    </section>
+  );
+});
+
+function AuditionsView({ day, setDay }) {
+  const plan = AUDITIONS;
+  const selected = plan.days.find((d) => d.day === day) ?? plan.best ?? plan.ranked[0];
+
+  return (
+    <div className="split">
+      <aside className="side">
+        <header className="large-header">
+          <p className="eyebrow">Auto-scheduled</p>
+          <h1>Auditions</h1>
+        </header>
+
+        <Surface className="panel rules">
+          <Rule n={`${MIN_DIRECTORS}+`} text="directors free every audition hour" />
+          <Rule n={PER_HOUR} text="actors an hour at most, about 10 minutes each" />
+          <Rule n={`${fmt(AUDITION_START)}–${fmt(AUDITION_END)}`} text="audition hours" wide />
+        </Surface>
+
+        <Section title="Best days" footer="Ranked by how many actors can make it, then the shortest block for the directors.">
+          {plan.ranked.map((d, i) => {
+            const on = d.day === selected.day;
+            const { flagged } = dayFacts(d);
+            return (
+              <button key={d.day} type="button" className="row day-row" aria-pressed={on} onClick={() => setDay(d.day)}>
+                <span className="rank" data-best={i === 0 || undefined}>{d.day}</span>
+                <span className="row-body">
+                  <span className="row-title">{d.window ? span(d.window) : `No hour with ${MIN_DIRECTORS} directors`}</span>
+                  <span className="row-sub">
+                    {d.window ? `${d.scheduled}/${ACTOR_TOTAL} actors · ${d.minDirectors}+ directors` : `${DAY_NAME[d.day]} doesn't work`}
+                  </span>
+                  {flagged.length > 0 && <span className="row-note">Heads-up: {names(flagged)}</span>}
+                </span>
+                {on ? <IconCheck className="check" /> : <IconChevron className="chev" />}
+              </button>
+            );
+          })}
+        </Section>
+      </aside>
+
+      <div className="main">
+        <AuditionDay d={selected} />
+      </div>
+    </div>
+  );
+}
+
+function Rule({ n, text, wide }) {
+  return (
+    <div className="rule">
+      <span className="rule-n" data-wide={wide || undefined}>{n}</span>
+      <span className="rule-t">{text}</span>
+    </div>
+  );
+}
+
+function AuditionDay({ d }) {
+  if (!d.window) {
+    return (
+      <Section title={DAY_NAME[d.day]}>
+        <p className="list-empty">
+          No hour between {fmt(AUDITION_START)} and {fmt(AUDITION_END)} on {DAY_NAME[d.day]} has {MIN_DIRECTORS} directors free.
+        </p>
+      </Section>
+    );
+  }
+  return (
+    <>
+      <Section
+        title={`${DAY_NAME[d.day]} schedule`}
+        count={span(d.window)}
+        footer="Each actor is placed in an hour they're free. Anyone under Also free can swap in."
+      >
+        {d.sessions.map((s) => {
+          const extra = s.free.filter((p) => !s.actors.includes(p));
+          return (
+            <div key={s.start} className="session">
+              <div className="session-time">
+                <span className="session-start">{fmt(s.start)}</span>
+                <span className="session-end">to {fmt(s.end)}</span>
+              </div>
+              <div className="session-body">
+                <div className="session-line">
+                  <span className="session-k">Directors</span>
+                  <span className="session-v">{names(s.directors)}</span>
+                </div>
+                <div className="chips">
+                  {s.actors.length ? (
+                    s.actors.map((p) => (
+                      <span key={p.name} className="chip" data-soft={s.flagged.includes(p) || undefined}>
+                        <Avatar person={p} />
+                        <span className="chip-name">{p.name}</span>
+                      </span>
+                    ))
+                  ) : (
+                    <span className="session-empty">Open slot</span>
+                  )}
+                </div>
+                {extra.length > 0 && (
+                  <div className="session-line">
+                    <span className="session-k">Also free</span>
+                    <span className="session-v muted">{names(extra)}</span>
+                  </div>
+                )}
+                {s.flagged.length > 0 && (
+                  <div className="session-line">
+                    <span className="session-k warn">Heads-up</span>
+                    <span className="session-v warn">
+                      {s.flagged.map((p) => `${firstName(p)}: ${softReason(p, d.day)}`).join(" · ")}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </Section>
+
+      {d.missing.length > 0 && (
+        <Section title="Can't make it" count={d.missing.length}>
+          {d.missing.map((p) => {
+            const other = otherDaysFor(p, AUDITIONS, d.day);
+            return (
+              <Row
+                key={p.name}
+                person={p}
+                dot="red"
+                subtitle={other.length ? `Free during auditions on ${other.join(", ")}` : "No audition day works this week"}
+              />
+            );
+          })}
+        </Section>
+      )}
+    </>
   );
 }
 
@@ -538,6 +732,7 @@ function Schedule({ person }) {
 
 const TABS = [
   { value: "now", label: "Now", icon: <IconClock /> },
+  { value: "auditions", label: "Auditions", icon: <IconClapper /> },
   { value: "plan", label: "Plan", icon: <IconCalendar /> },
   { value: "team", label: "Team", icon: <IconPeople /> },
 ];
@@ -555,6 +750,12 @@ export default function App() {
   const [selection, setSelection] = useState({ isLive: true });
   const [needed, setNeeded] = useState(() => new Set(PEOPLE.map((p) => p.name)));
   const reduceMotion = useMedia("(prefers-reduced-motion: reduce)");
+  const [auditionDay, setAuditionDay] = useState(() => AUDITIONS.best?.day ?? "Mon");
+
+  const openAudition = useCallback((day) => {
+    setAuditionDay(day);
+    setTab("auditions");
+  }, []);
 
   const goTo = useCallback(
     (day, min) => {
@@ -573,7 +774,9 @@ export default function App() {
     <>
       <div className="wallpaper" aria-hidden="true" />
       <main className="page" data-tab={tab}>
-        {tab === "now" && <NowView selection={selection} setSelection={setSelection} />}
+        <p className="brand">PUPASKO <span>Schedule</span></p>
+        {tab === "now" && <NowView selection={selection} setSelection={setSelection} openAudition={openAudition} />}
+        {tab === "auditions" && <AuditionsView day={auditionDay} setDay={setAuditionDay} />}
         {tab === "plan" && <PlanView needed={needed} setNeeded={setNeeded} goTo={goTo} />}
         {tab === "team" && <TeamView />}
       </main>

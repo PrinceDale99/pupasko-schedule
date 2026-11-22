@@ -109,3 +109,110 @@ export function nowInfo(date = new Date()) {
   const raw = date.getHours() * 60 + date.getMinutes();
   return { day, min: raw };
 }
+
+/* ---------- Auditions ----------
+ * An hour is an audition hour when at least `minDirectors` directors are out
+ * of class. On each day we pick the one continuous block of such hours that
+ * the most actors can attend (shorter blocks win ties, so directors sit for
+ * less time), then place every actor in an hour inside it when they're free.
+ */
+export const MIN_DIRECTORS = 3;
+export const PER_HOUR = 6; // about 10 minutes per actor
+export const AUDITION_START = 8 * 60;
+export const AUDITION_END = 20 * 60;
+
+function hourSlots(day, directors, actors, minDirectors) {
+  const out = [];
+  for (let start = AUDITION_START; start + 60 <= AUDITION_END; start += 60) {
+    const end = start + 60;
+    const dirs = directors.filter((p) => freeFor(p, day, start, end));
+    out.push({
+      day, start, end,
+      directors: dirs,
+      ok: dirs.length >= minDirectors,
+      free: actors.filter((p) => freeFor(p, day, start, end)),
+      flagged: [...dirs, ...actors].filter((p) => freeFor(p, day, start, end) && softIn(p, day, start, end)),
+    });
+  }
+  return out;
+}
+
+/** Place actors in hours: fewest choices first, each into the emptiest hour with room. */
+function place(window, actors) {
+  const sessions = window.map((s) => ({ ...s, actors: [] }));
+  const options = actors
+    .map((p) => ({ p, hours: sessions.filter((s) => s.free.includes(p)) }))
+    .filter((o) => o.hours.length)
+    .sort((a, b) => a.hours.length - b.hours.length);
+  const placed = new Set();
+  for (const { p, hours } of options) {
+    const room = hours.filter((s) => s.actors.length < PER_HOUR);
+    if (!room.length) continue;
+    room.reduce((a, b) => (b.actors.length < a.actors.length ? b : a)).actors.push(p);
+    placed.add(p.name);
+  }
+  return { sessions, placed };
+}
+
+const flagCount = (sessions) => new Set(sessions.flatMap((s) => s.flagged.map((p) => p.name))).size;
+
+export function auditionDay(day, directors, actors, minDirectors = MIN_DIRECTORS) {
+  const slots = hourSlots(day, directors, actors, minDirectors);
+  const okHours = slots.filter((s) => s.ok).length;
+
+  // Every continuous block of audition hours; keep the one that seats the
+  // most actors, then the shortest, then the fewest heads-ups, then the most directors.
+  let best = null;
+  for (let i = 0; i < slots.length; i++) {
+    if (!slots[i].ok) continue;
+    for (let j = i; j < slots.length && slots[j].ok; j++) {
+      const window = slots.slice(i, j + 1);
+      const { sessions, placed } = place(window, actors);
+      const cand = {
+        sessions, placed,
+        len: j - i + 1,
+        flags: flagCount(sessions),
+        minDirs: Math.min(...window.map((s) => s.directors.length)),
+      };
+      const better =
+        !best ||
+        placed.size - best.placed.size ||
+        best.len - cand.len ||
+        best.flags - cand.flags ||
+        cand.minDirs - best.minDirs;
+      if (!best || better > 0) best = cand;
+    }
+  }
+  if (!best) return { day, okHours, window: null, sessions: [], scheduled: 0, flags: 0, missing: actors };
+
+  return {
+    day,
+    okHours,
+    window: { start: best.sessions[0].start, end: best.sessions[best.sessions.length - 1].end },
+    minDirectors: best.minDirs,
+    sessions: best.sessions,
+    scheduled: best.placed.size,
+    flags: best.flags,
+    missing: actors.filter((p) => !best.placed.has(p.name)),
+  };
+}
+
+export function planAuditions(directors, actors, minDirectors = MIN_DIRECTORS) {
+  const days = DAYS.map((d) => auditionDay(d, directors, actors, minDirectors));
+  const len = (d) => (d.window ? d.window.end - d.window.start : 1e9);
+  const ranked = [...days].sort(
+    (a, b) =>
+      b.scheduled - a.scheduled ||
+      len(a) - len(b) ||
+      a.flags - b.flags ||
+      (b.minDirectors ?? 0) - (a.minDirectors ?? 0)
+  );
+  return { days, ranked, best: ranked[0]?.window ? ranked[0] : null };
+}
+
+/** Other days whose audition block this person could attend. */
+export function otherDaysFor(person, plan, exceptDay) {
+  return plan.days
+    .filter((d) => d.day !== exceptDay && d.sessions.some((s) => s.free.includes(person)))
+    .map((d) => d.day);
+}

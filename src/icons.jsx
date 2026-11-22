@@ -40,3 +40,24 @@ export const IconInfo = (p) => (
     <path d="M12 11v5.5M12 7.6v.1" />
   </svg>
 );
+
+export const IconClapper = (p) => (
+  <svg {...base} {...p}>
+    <path d="M4 10h16v8.5a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 18.5z" />
+    <path d="M3.6 9.6l-.5-2.4a1.5 1.5 0 0 1 1.2-1.8l13.3-2.6a1.5 1.5 0 0 1 1.8 1.2l.5 2.4z" />
+    <path d="M8.2 4.7l2.3 3.1M13.1 3.7l2.3 3.1" />
+  </svg>
+);
+
+export const IconSparkle = (p) => (
+  <svg {...base} {...p}>
+    <path d="M12 3.5l1.9 4.9 4.9 1.9-4.9 1.9-1.9 4.9-1.9-4.9-4.9-1.9 4.9-1.9z" />
+    <path d="M18.5 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z" />
+  </svg>
+);
+
+export const IconCheck = (p) => (
+  <svg {...base} strokeWidth={2.4} {...p}>
+    <path d="M5 12.5l4.5 4.5L19 7.5" />
+  </svg>
+);
