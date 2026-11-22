@@ -204,6 +204,25 @@ export const PEOPLE = [
   { name: "Lorenzo Miguel", role: "Actor", group: "Actors", section: "BSPSYCH 1st sem", busy: BSPSYCH_1, note: "Same schedule image as Hannah." },
   { name: "Lexine Lorraine", role: "Actor", group: "Actors", section: "BSPSYCH 1st sem", busy: BSPSYCH_1, note: "Same schedule image as Hannah." },
   { name: "Lea Panesa", role: "Actor", group: "Actors", section: "BSBA-HRM 1-1", busy: BSBA_HRM_1_1, note: "Same schedule image as Icelle." },
+  {
+    name: "Marianne Fei", role: "Actor", group: "Actors", section: "BSECE 1-1 (STEM)",
+    busy: [
+      ["Tue", "07:30", "10:30", "CWTS 001"],
+      ["Tue", "10:30", "13:30", "Basic Electronics"],
+      ["Tue", "14:00", "17:00", "Understanding the Self"],
+      ["Tue", "17:00", "20:00", "Calculus 1"],
+      ["Wed", "09:30", "11:30", "PATHFIT 1"],
+      ["Wed", "14:00", "17:00", "Engineering Data Analysis"],
+      ["Wed", "17:00", "20:00", "Mathematics in the Modern World"],
+      ["Thu", "14:00", "20:00", "Calculus 1 (make-up classes)"],
+      ["Fri", "10:00", "12:00", "Computer Programming Lecture"],
+      ["Fri", "14:00", "17:00", "Basic Electronics 1"],
+      ["Fri", "17:00", "20:00", "Computer Programming Lab"],
+      ["Sat", "14:00", "17:00", "Chemistry for Engineers"],
+      ["Sat", "17:00", "20:00", "Sometimes a Chem make-up class", "soft"],
+    ],
+    note: "Saturday 5–8 PM is sometimes used for Chemistry make-up classes.",
+  },
 
   // Scriptwriters
   {

@@ -557,3 +557,15 @@ button.row:active { background: var(--fill-2); }
 @media (prefers-reduced-motion: reduce) {
   .now-lists, .cell, .chev { transition: none; }
 }
+
+/* ---------- Lite mode (phones) ----------
+   Only the floating tab bar and the controls keep a real backdrop blur.
+   Thumbs are opaque white at rest, so their blur was invisible work. */
+[data-lite] .lg-switch-thumb,
+[data-lite] .lg-slider-thumb {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+[data-lite] .lg-glass { --lg-blur: 12px; }
+/* Rows that scroll off-screen skip layout and paint until they come back. */
+[data-lite] .section { content-visibility: auto; contain-intrinsic-size: auto 400px; }
